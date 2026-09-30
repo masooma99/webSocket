@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>WebSocket</h1>
+    <h4>when will you need webSocket?</h4>
+    <ul>
+      <li>For chat "messages loading. . ."</li>
+      <li>for receiving requests</li>
+      <li id="listItem"></li>
+    </ul>
+    <br />
+    <h1>WebSocket Client:</h1>
+    <div id="status">Connecting to server . . .</div>
+    <div id="messages"></div>
+    <div>
+      <input type="text" id="messageInput" placeholder="Type your message" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+      const ws = new WebSocket("ws://localhost:8080")
+      ws.addEventListener("open", () => {
+        console.log("we are connected!")
+        ws.send("Hey! how's it going?")
+      })
+      let listI = document.getElementById("listItem")
+      ws.addEventListener("message", (e) => {
+        console.log(e.data)
+        listI.innerHTML = e.data
+      })
+      //-----------------------------------------------
+      const status = document.getElementById("status")
+      const messages = document.getElementById("messages")
+      const messageInput = document.getElementById("messageInput")
+      //connection open
+      ws.onopen = () => {
+        status.textContent = "Connected to server"
+        status.style.color = "green"
+      }
+      //Listen for message
+      ws.onmessage = (event) => {
+        const message = document.createElement("div")
+        message.className = "message"
+        message.textContent = event.data
+        messages.appendChild(message)
+        messages.scrollTop = messages.scrollHeight
+      }
+      //Handle error
+      ws.onerror = (error) => {
+        status.textContent = "Error: " + error.message
+        status.style.color = "red"
+      }
+      // Handle connection close
+      ws.onclose = () => {
+        status.textContent = "Disconnected from the server!"
+        status.style.color = "red"
+      }
+      // Function to send a message
+      const sendMessage = () => {
+        const message = messageInput.value.trim()
+        if (message) {
+          ws.send(message)
+          messageInput.value = ""
+        }
+      }
+      // Send message on enter key
+      messageInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          sendMessage()
+        }
+      })
+    </script>
+  </body>
+</html>
